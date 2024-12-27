@@ -8,7 +8,6 @@ class AppTestCase(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.AccountModel: BaseAccount = get_user_model()
-        cls.account_valid_data = {'email': 'test@email.com', 'password': 'P@ssword1'}
 
     def setUp(self) -> None:
         print(f'Test Started: {self._testMethodName}')

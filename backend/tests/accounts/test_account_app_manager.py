@@ -5,6 +5,7 @@ class TestAccountAppManager(AppTestCase):
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
+        cls.account_valid_data = {'email': 'test@email.com', 'password': 'P@ssword1'}
 
     def test_create_account_no_active__with_valid_credentials__creates_inactive_user(self):
         account = self.AccountModel.objects.create_account_no_active(**self.account_valid_data)

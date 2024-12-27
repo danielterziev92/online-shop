@@ -28,7 +28,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 'db_table': 'base_account',
-                'indexes': [models.Index(fields=['email'], name='base_account_email_8a5bc6_idx')],
+                'indexes': [models.Index(fields=['email'], name='base_accoun_email_a15835_idx')],
             },
             managers=[
                 ('objects', ecommerce.accounts.manager.AccountAppManager()),
