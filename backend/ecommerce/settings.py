@@ -8,6 +8,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 env = Env()
 env.read_env(os.path.join(BASE_DIR, '.env'))
 
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ecommerce.settings')
+
 SECRET_KEY = env.str('SECRET_KEY')
 
 DEBUG = env.bool('DEBUG', default=True)
@@ -23,13 +25,15 @@ DJANGO_APPS = (
     'django.contrib.staticfiles',
 )
 
-PROJECT_APPS = ()
+PROJECT_APPS = (
+    'ecommerce.accounts.apps.AccountsConfig',
+)
 
 THIRD_PARTY_APPS = (
     'ninja',
 )
 
-INSTALLED_APPS = DJANGO_APPS + PROJECT_APPS + THIRD_PARTY_APPS
+INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + PROJECT_APPS
 
 MIDDLEWARE = (
     'django.middleware.security.SecurityMiddleware',
@@ -63,7 +67,7 @@ WSGI_APPLICATION = 'ecommerce.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': env.str('DATABASE_ENGINE'),
+        'ENGINE': 'django.db.backends.postgresql',
         'NAME': env.str('DATABASE_NAME'),
         'USER': env.str('DATABASE_USER'),
         'PASSWORD': env.str('DATABASE_PASSWORD'),
@@ -98,3 +102,5 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+AUTH_USER_MODEL = 'accounts.BaseAccount'
