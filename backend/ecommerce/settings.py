@@ -32,7 +32,6 @@ PROJECT_APPS = (
 
 THIRD_PARTY_APPS = (
     'ninja',
-    'rest_framework_simplejwt',
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + PROJECT_APPS
@@ -107,9 +106,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'accounts.BaseAccount'
 
-JWT_AUTH = {
+JWT_SETTINGS = {
+    'SECRET_KEY': SECRET_KEY,
+    'ALGORITHM': 'HS256',
     'AUTH_HEADER': 'HTTP_AUTHORIZATION',
     'AUTH_HEADER_TYPE': 'Bearer',
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=10),
+    'COOKIE_MAX_AGE': timedelta(days=10),
 }
