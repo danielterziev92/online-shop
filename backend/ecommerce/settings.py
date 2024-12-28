@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 from pathlib import Path
 
 from environ import Env
@@ -31,6 +32,7 @@ PROJECT_APPS = (
 
 THIRD_PARTY_APPS = (
     'ninja',
+    'rest_framework_simplejwt',
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + PROJECT_APPS
@@ -104,3 +106,10 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'accounts.BaseAccount'
+
+JWT_AUTH = {
+    'AUTH_HEADER': 'HTTP_AUTHORIZATION',
+    'AUTH_HEADER_TYPE': 'Bearer',
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
+}
