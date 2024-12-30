@@ -66,12 +66,9 @@ export function ImageCarousel() {
                 <CarouselContent>
                     {images.map((image) => (
                         <CarouselItem key={image.id}>
-                            <div className={'relative w-full'}>
-                                <img
-                                    src={image.url}
-                                    alt={image.alt}
-                                    className="w-full h-[400px] md:h-[650px] object-cover rounded-lg"
-                                />
+                            <div className="relative w-full">
+                                <img src={image.url} alt={image.alt}
+                                     className="w-full h-[400px] md:h-[650px] object-cover rounded-lg"/>
                             </div>
                         </CarouselItem>
                     ))}

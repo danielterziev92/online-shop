@@ -1,4 +1,4 @@
-import {createSlice} from "@reduxjs/toolkit";
+import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 import {signIn} from "@/lib/store/features/auth/accountActions";
 
 
@@ -6,6 +6,7 @@ interface AuthState {
     data: Record<string, any>;
     settings: Record<string, any>;
     isAuthenticated: boolean;
+    theme: string;
     error: string | null;
     loading: boolean;
 }
@@ -14,6 +15,7 @@ const initialState: AuthState = {
     data: {},
     settings: {},
     isAuthenticated: false,
+    theme: "light",
     error: null,
     loading: false,
 }
@@ -21,7 +23,14 @@ const initialState: AuthState = {
 export const accountSlice = createSlice({
     name: "account",
     initialState,
-    reducers: {},
+    reducers: {
+        toggleTheme: (state) => {
+            state.theme = state.theme === "light" ? "dark" : "light";
+        },
+        setTheme: (state, action: PayloadAction<string>) => {
+            state.theme = action.payload;
+        },
+    },
     extraReducers: (builder) => {
         builder
             .addCase(signIn.pending, (state) => {
@@ -42,6 +51,6 @@ export const accountSlice = createSlice({
     }
 });
 
-export const {} = accountSlice.actions;
+export const {toggleTheme, setTheme} = accountSlice.actions;
 
 export default accountSlice.reducer;
