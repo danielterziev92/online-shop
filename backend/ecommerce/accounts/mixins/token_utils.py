@@ -27,7 +27,11 @@ class TokenUtilsMixin:
     @staticmethod
     def __create_token(account: BaseAccount, token_type: str) -> jwt.encode:
         return jwt.encode(
-            {'account_id': account.pk, 'exp': timezone.now() + JWT_SETTINGS[f'{token_type.upper()}_TOKEN_LIFETIME']},
+            {
+                'account_id': account.pk,
+                'is_verified': account.is_active,
+                'exp': timezone.now() + JWT_SETTINGS[f'{token_type.upper()}_TOKEN_LIFETIME']
+            },
             JWT_SETTINGS['SECRET_KEY'],
             algorithm=JWT_SETTINGS['ALGORITHM']
         )

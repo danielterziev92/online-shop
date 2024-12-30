@@ -33,15 +33,18 @@ class TestTokenUtilsMixin(AppTestCase):
 
         payload = jwt.decode(access_token, JWT_SETTINGS['SECRET_KEY'], algorithms=[JWT_SETTINGS['ALGORITHM']])
         self.assertEqual(payload['account_id'], self.account.pk)
+        self.assertEqual(payload['is_verified'], self.account.is_active)
 
         payload = jwt.decode(refresh_token, JWT_SETTINGS['SECRET_KEY'], algorithms=[JWT_SETTINGS['ALGORITHM']])
         self.assertEqual(payload['account_id'], self.account.pk)
+        self.assertEqual(payload['is_verified'], self.account.is_active)
 
     def test_create_access_token__with_valid_account__returns_valid_jwt(self):
         token = self.mixin.create_access_token(self.account)
         payload = jwt.decode(token, JWT_SETTINGS['SECRET_KEY'], algorithms=[JWT_SETTINGS['ALGORITHM']])
 
         self.assertEqual(payload['account_id'], self.account.pk)
+        self.assertEqual(payload['is_verified'], self.account.is_active)
         self.assertAlmostEqual(
             payload['exp'],
             (timezone.now() + JWT_SETTINGS['ACCESS_TOKEN_LIFETIME']).timestamp(),
@@ -53,6 +56,7 @@ class TestTokenUtilsMixin(AppTestCase):
         payload = jwt.decode(token, JWT_SETTINGS['SECRET_KEY'], algorithms=[JWT_SETTINGS['ALGORITHM']])
 
         self.assertEqual(payload['account_id'], self.account.pk)
+        self.assertEqual(payload['is_verified'], self.account.is_active)
         self.assertAlmostEqual(
             payload['exp'],
             (timezone.now() + JWT_SETTINGS['REFRESH_TOKEN_LIFETIME']).timestamp(),
