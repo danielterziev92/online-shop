@@ -32,14 +32,14 @@ export function SearchBar() {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full rounded-md border-2 border-[#3B82F6] bg-background px-3 py-2 text-sm
+                className="w-full rounded-md border-2 border-[var(--primary)] bg-background px-3 py-2 text-sm
                          placeholder:text-muted-foreground pr-10
-                         focus:outline-none focus:ring-0 focus:border-[#3B82F6]"
+                         focus:outline-none focus:ring-0 focus:border-[var(--primary)]"
                 placeholder="Search your favorite products"
             />
             <Search
                 strokeWidth={3}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#3B82F6]"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--primary)]"
                 size={20}
             />
         </div>
