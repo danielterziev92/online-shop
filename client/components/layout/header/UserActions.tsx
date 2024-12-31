@@ -1,10 +1,10 @@
 'use client';
 
+import {Suspense, lazy} from 'react';
+
 import {useDispatch, useSelector} from "react-redux";
 
-import {AuthPopover} from "@/components/auth/AuthPopover";
-
-import {Heart, Moon, RefreshCcw, ShoppingBag, Sun} from "lucide-react";
+import {Heart, LoaderCircle, Moon, RefreshCcw, ShoppingBag, Sun} from "lucide-react";
 
 import {AppDispatch, RootState} from "@/lib/store/store";
 import {toggleTheme} from "@/lib/store/features/auth/accountSlice";
@@ -23,6 +23,12 @@ const CountBadge: React.FC<CountBadgeProps> = ({count}) => (
 export function UserActions() {
     const dispatch = useDispatch<AppDispatch>();
     const theme = useSelector((state: RootState) => state.account.theme);
+
+    const AuthPopoverLazy = lazy(() =>
+        import('@/components/auth/AuthPopover').then(mod => ({
+            default: mod.AuthPopover
+        }))
+    );
 
     const toggleThemeHandler = () => {
         dispatch(toggleTheme());
@@ -50,7 +56,9 @@ export function UserActions() {
                 <CountBadge count={0}/>
             </button>
             <button>
-                <AuthPopover/>
+                <Suspense fallback={<LoaderCircle className="animate-spin"/>}>
+                    <AuthPopoverLazy/>
+                </Suspense>
             </button>
         </div>
     );
