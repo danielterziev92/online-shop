@@ -1,5 +1,5 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
-import {signIn, signUpAction} from "@/lib/store/features/auth/accountActions";
+import {signInAction, signUpAction, verifyCodeAction} from "@/lib/store/features/auth/accountActions";
 
 interface AccountData {
     accountId: number;
@@ -19,6 +19,11 @@ interface AuthState {
 }
 
 interface SignInResponse {
+    accountId: number;
+    isVerified: boolean;
+}
+
+interface VerifyCodeResponse {
     accountId: number;
     isVerified: boolean;
 }
@@ -46,10 +51,10 @@ export const accountSlice = createSlice({
     extraReducers: (builder) => {
         builder
             // Sign In
-            .addCase(signIn.pending, (state) => {
+            .addCase(signInAction.pending, (state) => {
                 state.loading = true;
             })
-            .addCase(signIn.fulfilled, (state, action: PayloadAction<SignInResponse>) => {
+            .addCase(signInAction.fulfilled, (state, action: PayloadAction<SignInResponse>) => {
                 state.loading = false;
                 state.isAuthenticated = true;
                 state.data = {
@@ -57,7 +62,7 @@ export const accountSlice = createSlice({
                 };
                 state.isVerified = action.payload.isVerified;
             })
-            .addCase(signIn.rejected, (state) => {
+            .addCase(signInAction.rejected, (state) => {
                 state.loading = false;
             })
             // Sign Up
@@ -68,6 +73,21 @@ export const accountSlice = createSlice({
                 state.loading = false;
             })
             .addCase(signUpAction.rejected, (state) => {
+                state.loading = false;
+            })
+            // Verify Code
+            .addCase(verifyCodeAction.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(verifyCodeAction.fulfilled, (state, action: PayloadAction<VerifyCodeResponse>) => {
+                state.loading = false;
+                state.isAuthenticated = true;
+                state.data = {
+                    accountId: action.payload.accountId,
+                };
+                state.isVerified = action.payload.isVerified;
+            })
+            .addCase(verifyCodeAction.rejected, (state) => {
                 state.loading = false;
             })
     }
