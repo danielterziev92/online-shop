@@ -14,9 +14,9 @@ sign_in_router = Router()
     'sign-in/',
     response={status.HTTP_200_OK: TokenSchema, status.HTTP_401_UNAUTHORIZED: SignInErrorSchema},
     auth=None,
-    description="Signs in account and returns access token in response and refresh token in cookie",
-    summary="Account sign in",
-    tags=["Authentication"]
+    description='Signs in account and returns access token in response and refresh token in cookie',
+    summary='Account sign in',
+    tags=['Authentication']
 )
 def sign_in(request, data: SignInSchema):
     account: BaseAccount | None = authenticate(email=data.email, password=data.password)

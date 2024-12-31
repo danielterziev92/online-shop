@@ -1,8 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from ninja import Router
-from pydantic import ValidationError
 
 from ecommerce.accounts.models import BaseAccount
 from ecommerce.accounts.schemas import SignUpErrorSchema, SignUpSchema, AuthErrors
@@ -15,11 +15,11 @@ AccountModel: BaseAccount = get_user_model()
 
 @sign_up_router.post(
     'sign-up/',
-    response={status.HTTP_201_CREATED: dict, status.HTTP_401_UNAUTHORIZED: SignUpErrorSchema},
+    response={status.HTTP_201_CREATED: dict, status.HTTP_400_BAD_REQUEST: SignUpErrorSchema},
     auth=None,
-    description="Signs in account and returns access token in response and refresh token in cookie",
-    summary="Account sign in",
-    tags=["Authentication"]
+    description='Creates an inactive account pending email verification. Validates password strength, confirms password match, and requires terms acceptance.',
+    summary='Create new account',
+    tags=['Authentication']
 )
 def sign_up(request, data: SignUpSchema):
     if data.password != data.repeatPassword:
