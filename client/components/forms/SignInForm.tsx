@@ -5,32 +5,42 @@ import {useDispatch, useSelector} from "react-redux";
 
 import {zodResolver} from "@hookform/resolvers/zod";
 import {useForm} from "react-hook-form";
+import {useToast} from "@/hooks/use-toast";
 
 import * as z from "zod";
 
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
-import {Input} from "@/components/ui/input";
+import {Form} from "@/components/ui/form";
 import {Alert, AlertDescription} from "@/components/ui/alert";
 import {Button} from "@/components/ui/button";
 
+import {LoaderCircle} from "lucide-react";
+
+import {EmailInput} from "@/components/forms/EmailInput";
+import {PasswordInput} from "@/components/forms/PasswordInput";
+
 import {AppDispatch, RootState} from "@/lib/store/store";
-import {signIn} from "@/lib/store/features/auth/accountActions";
+import {signInAction} from "@/lib/store/features/auth/accountActions";
+import {useState} from "react";
+import {formatErrorMessage} from "@/lib/errorMessages";
+
 
 interface SignInFormProps {
     onSuccess?: () => void;
 }
 
-
 const formSchema = z.object({
-    email: z.string().email('Invalid email address'),
-    password: z.string().min(6, 'Password must be at least 6 characters'),
+    email: z.string().email('Невалиден имейл адрес'),
+    password: z.string().min(8, 'Паролата трябва да съдържа поне 8 символа'),
 });
 
-export default function SignInForm({onSuccess}: SignInFormProps) {
+export function SignInForm({onSuccess}: SignInFormProps) {
+    const {toast} = useToast();
     const dispatch = useDispatch<AppDispatch>();
     const router = useRouter();
 
-    const {error, loading} = useSelector((state: RootState) => state.account);
+    const loading = useSelector((state: RootState) => state.account.loading);
+
+    const [errors, setErrors] = useState<string[]>([]);
 
     const form = useForm({
         resolver: zodResolver(formSchema),
@@ -38,49 +48,44 @@ export default function SignInForm({onSuccess}: SignInFormProps) {
     });
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        const resultAction = await dispatch(signIn(values));
+        const response = await dispatch(signInAction(values));
 
-        if (signIn.fulfilled.match(resultAction)) {
+        if (signInAction.fulfilled.match(response)) {
             onSuccess?.();
+            toast({variant: 'success', duration: 3000, description: 'Успешно се вписахте в профила си!'});
             router.push('/');
+        } else {
+            const errors: string[] = formatErrorMessage(response.payload as string);
+            setErrors(errors);
         }
     };
 
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
+                <EmailInput
                     control={form.control}
-                    name={'email'}
-                    render={({field}) => (
-                        <FormItem>
-                            <FormLabel>Email</FormLabel>
-                            <FormControl><Input type={'email'} {...field}/></FormControl>
-                            <FormMessage/>
-                        </FormItem>
-                    )}
+                    name="email"
+                    label="Имейл"
                 />
 
-                <FormField
+                <PasswordInput
                     control={form.control}
-                    name={'password'}
-                    render={({field}) => (
-                        <FormItem>
-                            <FormLabel>Password</FormLabel>
-                            <FormControl><Input type={'password'} {...field}/></FormControl>
-                            <FormMessage/>
-                        </FormItem>
-                    )}
+                    name="password"
+                    label="Парола"
+                    isMainPassword
                 />
 
-                {error && (
-                    <Alert variant={'destructive'}>
-                        <AlertDescription>{error}</AlertDescription>
+                {errors.length > 0 && (
+                    <Alert variant="destructive">
+                        {errors.map((err, index) => (
+                            <AlertDescription key={index}>{err}</AlertDescription>
+                        ))}
                     </Alert>
                 )}
 
                 <Button type={'submit'} className="w-full">
-                    {loading ? 'Signing in...' : 'Sign In'}
+                    {loading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin"/> : 'Вписване'}
                 </Button>
             </form>
         </Form>
