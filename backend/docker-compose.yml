@@ -15,6 +15,40 @@ services:
       retries: 5
     volumes:
       - postgresql:/var/lib/postgresql/data
+    networks:
+      - backend-network
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend-network
+
+  worker:
+    build: .
+    command: python manage.py rundramatiq
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+      - database
+    env_file:
+      - .env
+    networks:
+      - backend-network
 
 volumes:
   postgresql:
+  redis:
+
+networks:
+  backend-network:
+    driver: bridge
