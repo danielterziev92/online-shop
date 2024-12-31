@@ -1,13 +1,13 @@
 import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/dialog";
 
-interface AuthDialogProps {
+export interface AuthDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     title: string;
     children: React.ReactNode;
 }
 
-export function AuthDialog({open, onOpenChange, title, children}: AuthDialogProps) {
+export const AuthDialog = ({open, onOpenChange, title, children}: AuthDialogProps) => {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
