@@ -2,7 +2,10 @@ import type {Metadata} from "next";
 import {Roboto} from "next/font/google";
 
 import "./globals.css";
+import {Toaster} from "@/components/ui/toaster";
+
 import {Header} from "@/components/layout/Header";
+
 import {Providers} from "@/app/providers";
 
 const roboto = Roboto({
@@ -26,6 +29,7 @@ export default function RootLayout({children,}: Readonly<{
             <Header/>
             {children}
         </Providers>
+        <Toaster/>
         </body>
         </html>
     );

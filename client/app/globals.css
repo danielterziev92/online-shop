@@ -32,6 +32,8 @@ body {
         --chart-3: #0C4A6E;
         --chart-4: #EAB308;
         --chart-5: #EA580C;
+        --valid-input: #22c55e;
+
         --radius: 0.5rem;
     }
 
@@ -71,4 +73,11 @@ body {
     body {
         @apply bg-background text-foreground;
     }
+
+}
+
+.focus-visible\:ring-2:focus-visible {
+    box-shadow: none !important;
+    --tw-ring-offset-shadow: none !important;
+    --tw-ring-shadow: none !important;
 }
