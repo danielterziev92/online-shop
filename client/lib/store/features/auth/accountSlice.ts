@@ -1,22 +1,34 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
-import {signIn} from "@/lib/store/features/auth/accountActions";
+import {signIn, signUpAction} from "@/lib/store/features/auth/accountActions";
 
+interface AccountData {
+    accountId: number;
+}
+
+interface AccountSettings {
+    notifications?: boolean;
+}
 
 interface AuthState {
-    data: Record<string, any>;
-    settings: Record<string, any>;
+    data: AccountData | null;
+    settings: AccountSettings | object;
     isAuthenticated: boolean;
-    theme: string;
-    error: string | null;
+    isVerified: boolean;
+    theme: 'light' | 'dark';
     loading: boolean;
 }
 
+interface SignInResponse {
+    accountId: number;
+    isVerified: boolean;
+}
+
 const initialState: AuthState = {
-    data: {},
+    data: null,
     settings: {},
     isAuthenticated: false,
+    isVerified: false,
     theme: "light",
-    error: null,
     loading: false,
 }
 
@@ -25,28 +37,38 @@ export const accountSlice = createSlice({
     initialState,
     reducers: {
         toggleTheme: (state) => {
-            state.theme = state.theme === "light" ? "dark" : "light";
+            state.theme = state.theme === 'light' ? 'dark' : 'light';
         },
-        setTheme: (state, action: PayloadAction<string>) => {
+        setTheme: (state, action: PayloadAction<AuthState['theme']>) => {
             state.theme = action.payload;
         },
     },
     extraReducers: (builder) => {
         builder
+            // Sign In
             .addCase(signIn.pending, (state) => {
                 state.loading = true;
-                state.error = null;
             })
-            .addCase(signIn.fulfilled, (state, action) => {
+            .addCase(signIn.fulfilled, (state, action: PayloadAction<SignInResponse>) => {
                 state.loading = false;
                 state.isAuthenticated = true;
                 state.data = {
                     accountId: action.payload.accountId,
-                }
+                };
+                state.isVerified = action.payload.isVerified;
             })
-            .addCase(signIn.rejected, (state, action) => {
+            .addCase(signIn.rejected, (state) => {
                 state.loading = false;
-                state.error = action.payload as string;
+            })
+            // Sign Up
+            .addCase(signUpAction.pending, state => {
+                state.loading = true;
+            })
+            .addCase(signUpAction.fulfilled, state => {
+                state.loading = false;
+            })
+            .addCase(signUpAction.rejected, (state) => {
+                state.loading = false;
             })
     }
 });
