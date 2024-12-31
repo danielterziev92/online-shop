@@ -19,6 +19,8 @@ class AuthErrors:
     PASSWORD_MISMATCH: str = 'Passwords do not match'
     TERMS_CONFORMATION: str = 'Terms must be accepted'
     EMAIL_EXISTS: str = 'Email already exists'
+    CODE_REQUIRED: str = 'Code is required'
+    CODE_NOT_EXIST: str = 'Code does not exist'
 
 
 class SignInErrorSchema(Schema):
@@ -30,7 +32,7 @@ class SignInErrorSchema(Schema):
     """
     error: str = Field(
         ...,
-        description="Error message",
+        description='Error message',
         example=AuthErrors.INVALID_CREDENTIALS
     )
 
@@ -42,7 +44,7 @@ class SignInSchema(Schema):
 
 class SignUpErrorSchema(Schema):
     """
-    Authentication Error Responses:
+    Error Responses:
     - 400:
         - Passwords do not match
         - Terms must be accepted
@@ -50,8 +52,8 @@ class SignUpErrorSchema(Schema):
     """
     error: str = Field(
         ...,
-        description="Error message",
-        example=AuthErrors.PASSWORD_MISMATCH
+        description='Error message',
+        example=AuthErrors.PASSWORD_MISMATCH,
     )
 
 
@@ -60,6 +62,18 @@ class SignUpSchema(Schema):
     password: str
     repeatPassword: str
     terms: bool
+
+
+class VerifyCodeErrorSchema(Schema):
+    """
+    Error Responses:
+    - 400:
+    """
+    error: str = Field(
+        ...,
+        description='Error message',
+        examples=AuthErrors.PASSWORD_MISMATCH,
+    )
 
 
 class VerifyCodeSchema(Schema):
