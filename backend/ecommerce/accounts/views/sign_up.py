@@ -2,15 +2,37 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
-from ninja import Router
+from ninja import Router, Schema, Field
 
 from ecommerce.accounts.models import BaseAccount
-from ecommerce.accounts.schemas import SignUpErrorSchema, SignUpSchema, AuthErrors
+from ecommerce.accounts.schemas import AuthErrors
 from ecommerce.utilities import status
 
 sign_up_router = Router()
 
 AccountModel: BaseAccount = get_user_model()
+
+
+class SignUpErrorSchema(Schema):
+    """
+    Error Responses:
+    - 400:
+        - Passwords do not match
+        - Terms must be accepted
+        - Email already exists
+    """
+    error: str = Field(
+        ...,
+        description='Error message',
+        example=AuthErrors.PASSWORD_MISMATCH,
+    )
+
+
+class SignUpSchema(Schema):
+    email: str
+    password: str
+    repeatPassword: str
+    terms: bool
 
 
 @sign_up_router.post(

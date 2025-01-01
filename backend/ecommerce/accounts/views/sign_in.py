@@ -1,13 +1,32 @@
 from django.contrib.auth import authenticate
-from ninja import Router
+from ninja import Router, Schema, Field
 from ninja.responses import Response
 
 from ecommerce.accounts.mixins.token_utils import TokenUtilsMixin
 from ecommerce.accounts.models import BaseAccount
-from ecommerce.accounts.schemas import TokenSchema, SignInErrorSchema, SignInSchema, AuthErrors
+from ecommerce.accounts.schemas import TokenSchema, AuthErrors
 from ecommerce.utilities import status
 
 sign_in_router = Router()
+
+
+class SignInErrorSchema(Schema):
+    """
+    Authentication Error Responses:
+    - 401:
+        - Invalid credentials
+        - Account not activated
+    """
+    error: str = Field(
+        ...,
+        description='Error message',
+        example=AuthErrors.INVALID_CREDENTIALS
+    )
+
+
+class SignInSchema(Schema):
+    email: str
+    password: str
 
 
 @sign_in_router.post(

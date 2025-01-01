@@ -1,12 +1,28 @@
-from ninja import Router
+from ninja import Router, Schema, Field
 from ninja.responses import Response
 
 from ecommerce.accounts.mixins.token_utils import TokenUtilsMixin
 from ecommerce.accounts.models import AccountVerification
-from ecommerce.accounts.schemas import TokenSchema, VerifyCodeErrorSchema, VerifyCodeSchema, AuthErrors
+from ecommerce.accounts.schemas import TokenSchema, AuthErrors
 from ecommerce.utilities import status
 
 verify_code_router = Router()
+
+
+class VerifyCodeErrorSchema(Schema):
+    """
+    Error Responses:
+    - 400:
+    """
+    error: str = Field(
+        ...,
+        description='Error message',
+        examples=AuthErrors.PASSWORD_MISMATCH,
+    )
+
+
+class VerifyCodeSchema(Schema):
+    code: str
 
 
 @verify_code_router.post(
