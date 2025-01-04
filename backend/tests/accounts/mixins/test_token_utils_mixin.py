@@ -62,3 +62,27 @@ class TestTokenUtilsMixin(AppTestCase):
             (timezone.now() + JWT_SETTINGS['REFRESH_TOKEN_LIFETIME']).timestamp(),
             delta=1
         )
+
+    def test_validate_token__with_valid_token__returns_true_and_payload(self):
+        token = self.mixin.create_access_token(self.account)
+        is_expired, payload = self.mixin.validate_token(token)
+
+        self.assertFalse(is_expired)
+        self.assertEqual(payload['account_id'], self.account.pk)
+        self.assertEqual(payload['is_verified'], self.account.is_active)
+
+    def test_validate_token__with_expired_token__returns_false_and_none(self):
+        payload = {
+            'account_id': self.account.pk, 'is_verified': self.account.is_active, 'exp': timezone.now().timestamp() - 1
+        }
+        expired_token = jwt.encode(payload, JWT_SETTINGS['SECRET_KEY'], algorithm=JWT_SETTINGS['ALGORITHM'])
+
+        is_expired, payload = self.mixin.validate_token(expired_token)
+        self.assertTrue(is_expired)
+        self.assertIsNone(payload)
+
+    def test_is_token_expired__with_invalid_token__returns_true(self):
+        is_expired, payload = self.mixin.validate_token("invalid_token")
+
+        self.assertTrue(is_expired)
+        self.assertIsNone(payload)
