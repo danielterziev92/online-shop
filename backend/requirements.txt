@@ -1,5 +1,7 @@
 annotated-types==0.7.0
 asgiref==3.9.1
+certifi==2025.7.9
+charset-normalizer==3.4.2
 contextlib2==21.6.0
 Django==5.2.4
 django-cors-headers==4.7.0
@@ -7,11 +9,14 @@ django-environ==0.12.0
 django-ninja==1.4.3
 django-ninja-extra==0.30.1
 django-redis==6.0.0
+idna==3.10
 injector==0.22.0
 psycopg2-binary==2.9.10
 pydantic==2.11.7
 pydantic_core==2.33.2
 redis==6.2.0
+requests==2.32.4
 sqlparse==0.5.3
 typing-inspection==0.4.1
 typing_extensions==4.14.1
+urllib3==2.5.0

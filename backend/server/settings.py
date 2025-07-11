@@ -16,6 +16,7 @@ DEBUG = env.bool("DEBUG")
 ROOT_URLCONF = "server.urls"
 WSGI_APPLICATION = "server.wsgi.application"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+APPEND_SLASH = False
 
 # Security Settings
 CSRF_COOKIE_HTTPONLY = True
@@ -49,6 +50,7 @@ PROJECT_APPS = (
 THIRD_PARTY_APPS = (
     "corsheaders",
     "ninja",
+    "ninja_extra",
     "redis",
     "django_redis",
 )
