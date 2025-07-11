@@ -1,0 +1,91 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  # Application logs (app.log) - САМО твоите генерирани логове
+  - job_name: app-logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: app-logs
+          service: django-app
+          environment: development
+          log_type: application
+          __path__: /app/logs/app.log  # Директен път към твоя файл
+
+    pipeline_stages:
+      # САМО regex parsing - БЕЗ JSON!
+      - regex:
+          expression: '^(?P<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3}) - (?P<logger>\S+) - (?P<level>\w+) - (?P<message>.*)'
+      
+      - timestamp:
+          source: timestamp
+          format: '2006-01-02 15:04:05,000'
+      
+      - labels:
+          level: level
+          logger: logger
+
+  # Debug logs (debug.log)
+  - job_name: debug-logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: debug-logs
+          service: django-app
+          environment: development
+          log_type: debug
+          __path__: /app/logs/debug.log  # Директен път
+
+    pipeline_stages:
+      - regex:
+          expression: '^(?P<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3}) - (?P<logger>\S+) - (?P<level>\w+) - (?P<message>.*)'
+      
+      - timestamp:
+          source: timestamp
+          format: '2006-01-02 15:04:05,000'
+      
+      - labels:
+          level: level
+          logger: logger
+
+  # Error logs (errors.log) 
+  - job_name: error-logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: error-logs
+          service: django-app
+          environment: development
+          log_type: errors
+          __path__: /app/logs/errors.log  # Директен път
+
+    pipeline_stages:
+      - regex:
+          expression: '^(?P<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3}) - (?P<logger>\S+) - (?P<level>\w+) - (?P<message>.*)'
+      
+      - timestamp:
+          source: timestamp
+          format: '2006-01-02 15:04:05,000'
+      
+      - labels:
+          level: level
+          logger: logger
+
+      # Извличаме service от съобщението [service-name]
+      - regex:
+          source: message
+          expression: '\[(?P<extracted_service>[^\]]+)\]'
+      
+      - labels:
+          extracted_service: extracted_service

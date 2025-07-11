@@ -1,54 +1,221 @@
-version: '3.8'
+version: "3.8"
 
 services:
+  server:
+    container_name: server
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      network: host
+    env_file:
+      - .env.sample
+    environment:
+      APP_HOME: ${APP_HOME}
+      LOG_BASE_DIR: ${LOG_BASE_DIR}
+    volumes:
+      - static_volume:${APP_HOME}/staticfiles:rw
+      - media_volume:${APP_HOME}/mediafiles:rw
+      - logs_volume:${LOG_BASE_DIR}:rw
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/api/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: "1.0"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    depends_on:
+      database:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      loki:
+        condition: service_healthy
+      grafana:
+        condition: service_healthy
+    networks:
+      - app-network
+
   database:
     image: postgres:latest
-    restart: always
+    container_name: database
+    environment:
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_DB}
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
-    env_file:
-      - .env
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER}" ]
       interval: 10s
       timeout: 5s
       retries: 5
-    volumes:
-      - postgresql:/var/lib/postgresql/data
+      start_period: 30s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "0.5"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     networks:
-      - backend-network
+      - app-network
 
   redis:
+    container_name: redis
     image: redis:latest
+    volumes:
+      - redis_data:/data
     ports:
       - "6379:6379"
-    volumes:
-      - redis:/data
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.3"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     networks:
-      - backend-network
+      - app-network
 
-  worker:
-    build: .
-    command: python manage.py rundramatiq
+  loki:
+    container_name: loki
+    image: grafana/loki:latest
     volumes:
-      - .:/app
-    depends_on:
-      - redis
-      - database
-    env_file:
-      - .env
+      - loki_data:/loki
+      - ./config/loki/loki-config.yaml:/etc/loki/local-config.yaml:ro
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "0.5"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     networks:
-      - backend-network
+      - app-network
 
-volumes:
-  postgresql:
-  redis:
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:latest
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SECURITY_ALLOW_EMBEDDING=true
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./config/grafana/provisioning:/etc/grafana/provisioning:ro
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    depends_on:
+      loki:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  promtail:
+    container_name: promtail
+    image: grafana/promtail:latest
+    env_file:
+      - .env.sample
+    environment:
+      LOG_BASE_DIR: ${LOG_BASE_DIR}
+    volumes:
+      - ./config/promtail/promtail-config.yaml:/etc/promtail/config.yml:ro
+      - logs_volume:${LOG_BASE_DIR}:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    command: -config.file=/etc/promtail/config.yml
+#    healthcheck:
+#      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:9080/ready || exit 1" ]
+#      interval: 30s
+#      timeout: 10s
+#      retries: 5
+#      start_period: 30s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: "0.2"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    depends_on:
+      loki:
+        condition: service_healthy
+      server:
+        condition: service_started
+    networks:
+      - app-network
 
 networks:
-  backend-network:
+  app-network:
     driver: bridge
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:
+  redis_data:
+  loki_data:
+  grafana_data:
+  logs_volume:

@@ -1,0 +1,493 @@
+{
+    "id": null,
+    "uid": "django-logs",
+    "title": "Django Error Logs Dashboard",
+    "description": "Django application error monitoring dashboard",
+    "tags": ["django", "logs", "errors"],
+    "style": "dark",
+    "timezone": "browser",
+    "panels": [
+        {
+            "id": 1,
+            "title": "📊 Log Levels Overview",
+            "type": "stat",
+            "targets": [
+                {
+                    "expr": "sum by (level) (count_over_time({job=\"error-logs\"}[5m]))",
+                    "refId": "A",
+                    "datasource": {
+                        "type": "loki",
+                        "uid": "loki"
+                    }
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "displayMode": "list",
+                        "orientation": "horizontal"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 5
+                            },
+                            {
+                                "color": "red",
+                                "value": 15
+                            }
+                        ]
+                    }
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "CRITICAL"
+                        },
+                        "properties": [
+                            {
+                                "id": "color",
+                                "value": {
+                                    "mode": "fixed",
+                                    "fixedColor": "red"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "ERROR"
+                        },
+                        "properties": [
+                            {
+                                "id": "color",
+                                "value": {
+                                    "mode": "fixed",
+                                    "fixedColor": "orange"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "WARNING"
+                        },
+                        "properties": [
+                            {
+                                "id": "color",
+                                "value": {
+                                    "mode": "fixed",
+                                    "fixedColor": "yellow"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 0
+            },
+            "options": {
+                "reduceOptions": {
+                    "values": false,
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": ""
+                },
+                "orientation": "auto",
+                "textMode": "auto",
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto"
+            },
+            "pluginVersion": "9.0.0"
+        },
+        {
+            "id": 2,
+            "title": "🏢 Services Overview",
+            "type": "piechart",
+            "targets": [
+                {
+                    "expr": "sum by (extracted_service) (count_over_time({job=\"error-logs\"}[1h]))",
+                    "refId": "A",
+                    "datasource": {
+                        "type": "loki",
+                        "uid": "loki"
+                    }
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "vis": false
+                        }
+                    },
+                    "mappings": []
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 0
+            },
+            "options": {
+                "reduceOptions": {
+                    "values": false,
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": ""
+                },
+                "pieType": "pie",
+                "tooltip": {
+                    "mode": "single",
+                    "sort": "none"
+                },
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "right"
+                }
+            },
+            "pluginVersion": "9.0.0"
+        },
+        {
+            "id": 3,
+            "title": "🔍 Django Application Logs",
+            "type": "logs",
+            "targets": [
+                {
+                    "expr": "{job=\"error-logs\"} |= \"$search_query\" | level=~\"$level\" | extracted_service=~\"$service\"",
+                    "refId": "A",
+                    "datasource": {
+                        "type": "loki",
+                        "uid": "loki"
+                    }
+                }
+            ],
+            "gridPos": {
+                "h": 12,
+                "w": 24,
+                "x": 0,
+                "y": 8
+            },
+            "options": {
+                "showTime": true,
+                "showLabels": true,
+                "showCommonLabels": false,
+                "wrapLogMessage": true,
+                "prettifyLogMessage": false,
+                "enableLogDetails": true,
+                "dedupStrategy": "none",
+                "sortOrder": "Descending"
+            },
+            "pluginVersion": "9.0.0"
+        },
+        {
+            "id": 4,
+            "title": "📈 Log Volume Over Time",
+            "type": "timeseries",
+            "targets": [
+                {
+                    "expr": "sum by (level) (rate({job=\"error-logs\"} | level=~\"$level\" | extracted_service=~\"$service\" [1m]))",
+                    "refId": "A",
+                    "datasource": {
+                        "type": "loki",
+                        "uid": "loki"
+                    }
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "Logs per second",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "drawStyle": "line",
+                        "fillOpacity": 20,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "vis": false
+                        },
+                        "lineInterpolation": "linear",
+                        "lineWidth": 2,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "auto",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 0.1
+                            }
+                        ]
+                    },
+                    "unit": "reqps"
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "CRITICAL"
+                        },
+                        "properties": [
+                            {
+                                "id": "color",
+                                "value": {
+                                    "mode": "fixed",
+                                    "fixedColor": "red"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "ERROR"
+                        },
+                        "properties": [
+                            {
+                                "id": "color",
+                                "value": {
+                                    "mode": "fixed",
+                                    "fixedColor": "orange"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "WARNING"
+                        },
+                        "properties": [
+                            {
+                                "id": "color",
+                                "value": {
+                                    "mode": "fixed",
+                                    "fixedColor": "yellow"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 24,
+                "x": 0,
+                "y": 20
+            },
+            "options": {
+                "legend": {
+                    "calcs": [
+                        "min",
+                        "max",
+                        "mean"
+                    ],
+                    "displayMode": "table",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "pluginVersion": "9.0.0"
+        },
+        {
+            "id": 5,
+            "title": "⚠️ Critical & Error Alerts",
+            "type": "logs",
+            "targets": [
+                {
+                    "expr": "{job=\"error-logs\"} | level=~\"CRITICAL|ERROR\" | line_format \"{{.timestamp}} [{{.level}}] {{.extracted_service}}: {{.message}}\"",
+                    "refId": "A",
+                    "datasource": {
+                        "type": "loki",
+                        "uid": "loki"
+                    }
+                }
+            ],
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 28
+            },
+            "options": {
+                "showTime": true,
+                "showLabels": false,
+                "showCommonLabels": false,
+                "wrapLogMessage": true,
+                "prettifyLogMessage": false,
+                "enableLogDetails": true,
+                "dedupStrategy": "exact",
+                "sortOrder": "Descending"
+            },
+            "pluginVersion": "9.0.0"
+        },
+        {
+            "id": 6,
+            "title": "📋 Top Error Messages",
+            "type": "table",
+            "targets": [
+                {
+                    "expr": "topk(10, sum by (message) (count_over_time({job=\"error-logs\"} | level=~\"ERROR|CRITICAL\" [1h])))",
+                    "refId": "A",
+                    "datasource": {
+                        "type": "loki",
+                        "uid": "loki"
+                    }
+                }
+            ],
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 28
+            },
+            "options": {
+                "showHeader": true
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {
+                        "align": "auto",
+                        "displayMode": "auto"
+                    }
+                }
+            }
+        }
+    ],
+    "templating": {
+        "list": [
+            {
+                "current": {
+                    "selected": false,
+                    "text": "All",
+                    "value": "$__all"
+                },
+                "hide": 0,
+                "includeAll": true,
+                "label": "Log Level",
+                "multi": true,
+                "name": "level",
+                "options": [],
+                "query": "label_values({job=\"error-logs\"}, level)",
+                "refresh": 1,
+                "regex": "",
+                "skipUrlSync": false,
+                "sort": 0,
+                "type": "query",
+                "datasource": {
+                    "type": "loki",
+                    "uid": "loki"
+                }
+            },
+            {
+                "current": {
+                    "selected": false,
+                    "text": "All",
+                    "value": "$__all"
+                },
+                "hide": 0,
+                "includeAll": true,
+                "label": "Service",
+                "multi": true,
+                "name": "service",
+                "options": [],
+                "query": "label_values({job=\"error-logs\"}, extracted_service)",
+                "refresh": 1,
+                "regex": "",
+                "skipUrlSync": false,
+                "sort": 0,
+                "type": "query",
+                "datasource": {
+                    "type": "loki",
+                    "uid": "loki"
+                }
+            },
+            {
+                "current": {
+                    "selected": false,
+                    "text": "",
+                    "value": ""
+                },
+                "hide": 0,
+                "label": "Search Query",
+                "name": "search_query",
+                "options": [
+                    {
+                        "selected": true,
+                        "text": "",
+                        "value": ""
+                    }
+                ],
+                "query": "",
+                "skipUrlSync": false,
+                "type": "textbox"
+            }
+        ]
+    },
+    "time": {
+        "from": "now-1h",
+        "to": "now"
+    },
+    "timepicker": {
+        "refresh_intervals": [
+            "5s",
+            "10s",
+            "30s",
+            "1m",
+            "5m",
+            "15m"
+        ]
+    },
+    "refresh": "30s",
+    "version": 1
+}
